@@ -6,20 +6,30 @@ on:
       - main  # Set this to your default branch
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # Enable GitHub Pages
+  enable-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable GitHub Pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+
+  # Build job
+  build:
+    needs: enable-pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,7 +44,15 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-      
+
+  # Deployment job
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4 
