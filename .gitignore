@@ -32,4 +32,11 @@ yarn-error.log*
 *.tgz
 
 # Yarn Integrity file
-.yarn-integrity 
+.yarn-integrity
+
+# Test files
+/tests/
+package.json
+package-lock.json
+node_modules/
+jest.config.js 
