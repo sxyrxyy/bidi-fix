@@ -1,0 +1,142 @@
+Product Requirements Document (PRD)
+
+Project: BiDi(bidirectional text) online fixer
+1 • Background & problem
+
+Mixed right-to-left (RTL) and left-to-right (LTR) text (e.g., Arabic + English, Hebrew + URLs) often renders in the wrong order on LinkedIn, WhatsApp, email clients, Discourse, etc. The fix is to insert invisible Unicode “bidi marks” (LRM, RLM, FSI, PDI) or wrap spans with dir="rtl/ltr". Today users copy-paste arcane code points (U+200E) or install heavy browser extensions. No standalone web page offers a one-paste, one-click solution.
+2 • Goal
+
+Ship a stupid-simple, self-hostable web page that:
+KPI	Target (MVP)
+Time from load → cleaned text	≤ 3 s on 3G
+Page weight (gzipped)	≤ 50 KB total
+Usability score (SUS)	≥ 80/100 with 5 test users
+Copy-to-clipboard success	100 % on evergreen browsers
+3 • Target audience
+
+    Primary: Casual bilingual users posting to social media, messaging apps, forums.
+
+    Secondary: Editors, translators, CSR agents who repeatedly fix mangled tickets.
+
+4 • User journey (MVP)
+
+    Open bidi-fix.html (mobile or desktop).
+
+    Paste garbled paragraph into the big input box (auto-focus).
+
+    Click “ Fix it ” (or press ⌘/Ctrl + Enter).
+
+    See two tabs in the output pane:
+
+        HTML — paragraph with <span dir> wrappers.
+
+        Plain text — same paragraph with the minimal necessary bidi marks.
+
+    Click “Copy HTML” or “Copy text”.
+
+    Done. (Optional) “Reset” clears both panes.
+
+5 • Functional requirements
+ID	Requirement	Priority
+F-1	Accept up to 10 000 characters in the input box	Must
+F-2	Auto-detect script direction per Unicode run	Must
+F-3	Produce two cleaned outputs (HTML + plain)	Must
+F-4	Copy-to-clipboard buttons with toast confirmation	Must
+F-5	Real-time character count & overflow warning	Should
+F-6	Client-only processing (no network calls)	Must
+F-7	Dark-mode via prefers-color-scheme	Should
+6 • Non-functional requirements
+
+    Zero backend — can be served from GitHub Pages / S3 / Netlify.
+
+    Vanilla tech — plain ES2020, no build step, no frameworks.
+
+    Accessibility — WCAG 2.1 AA (labels, contrast ≥ 4.5:1, keyboard nav).
+
+    Privacy — never uploads text; include clear notice in footer.
+
+    i18n — UI strings in EN, easily replaceable JSON for others.
+
+7 • MVP scope
+
+Everything in §5 with priority Must + copy-success toast + minimal responsive layout.
+Minimum Viable Product (MVP) specification
+A. Tech stack
+Layer	Choice	Rationale
+Mark-up	index.html	single file, easy mirroring
+Styling	style.css (Flexbox + CSS Custom Properties)	theme toggling in 30 lines
+Logic	fixit.js (≈ 200 LoC)	ES2020 modules, no bundler
+Dependency	Optional 4 KB tiny-bidi.js helper	open-source MIT, passes Unicode BiDi tests; can be copy-pasted to avoid CDN
+Hosting	any static host	drag-drop deploy
+B. Algorithm sketch
+
+1. Split input on Unicode sentence terminators (., ؟, !, …) → chunks.
+2. For each chunk:
+      a. Scan chars until direction change (regex: \p{Script=Hebrew} / \p{Script=Arabic} vs. default).
+      b. Collect “runs” (direction, text).
+      c. If run.direction ≠ embeddingContext:
+             • Plain output → prepend LRM/RLM as needed.
+             • HTML output  → wrap in <span dir="rtl|ltr">.
+3. Re-assemble chunks preserving original punctuation.
+Edge-cases: neutral punctuation, numbers, emojis inherit surrounding algo.
+
+Runs ≤ 1 000 chars: O(n) time.
+C. File list
+
+/bidi-fix/
+  ├─ index.html      (≈ 70 lines)
+  ├─ style.css       (≈ 50 lines, includes dark-mode)
+  ├─ fixit.js        (core logic + UI glue)
+  └─ tiny-bidi.js    (optional helper, vendored)
+
+D. UX wireframe (ASCII)
+
++--------------------------------------------------+
+|  BiDi Fix-it 🡐 logo / title                     |
+|--------------------------------------------------|
+| [ INPUT ]  0 / 10000 chars                       |
+|  _____________________________________________   |
+| |                                             |  |
+| |  (paste text here…)                         |  |
+| |_____________________________________________|  |
+|  [✓ Fix it ]   [⟲ Reset]                        |
+|--------------------------------------------------|
+|  OUTPUT  |  ☐ Plain text   ◉ HTML               |
+|  _____________________________________________   |
+| |                                             |  |
+| | (cleaned appears here, readonly, auto-sel)  |  |
+| |_____________________________________________|  |
+|  [📋 Copy]   “Copied!” toast                    |
+|--------------------------------------------------|
+| Footnote: “All processing happens locally.”     |
++--------------------------------------------------+
+
+E. Deployment steps (README snippet)
+
+    Clone repo → git clone …/bidi-fix.git
+
+    Optional: edit branding.txt for logo/text.
+
+    Point any static host to folder; or run npx serve bidi-fix for local test.
+
+    Done.
+
+F. Timeline & effort (solo dev)
+Week	Deliverable
+1	Basic algo in Node REPL + Unicode tests
+2	Wireframe HTML/CSS, integrate JS, copy buttons
+3	Edge-cases (emoji, numbers), a11y audit, dark-mode
+4	Logo, favicon, minification, README, public launch
+
+Total ≈ 40 h.
+G. Future (post-MVP) backlog
+
+    Drag-and-drop .txt / .docx → auto-convert.
+
+    Bookmarklet / Chrome “action” button that fixes selected text in-place.
+
+    PWA offline install + share-target (Android “Share ➜ Fix text”).
+
+    Crowd-sourced rules for tricky sites (Twitter/X strict length, Discord code block).
+
+    Toggle to force numbers RTL/LTR per locale rule.

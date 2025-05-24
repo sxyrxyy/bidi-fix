@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="description" content="Fix bidirectional text rendering issues with a single click. No data leaves your browser.">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+    
+    <title>BiDi Fix-it 🡐</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🡐</text></svg>">
+</head>
+<body>
+    <header>
+        <h1>BiDi Fix-it 🡐</h1>
+        <p class="subtitle">Fix mixed-direction text with one click</p>
+    </header>
+
+    <main>
+        <section class="input-section">
+            <div class="char-count">
+                <span id="charCount">0</span> / 10000 characters
+            </div>
+            <textarea 
+                id="inputText" 
+                placeholder="Paste your mixed-direction text here..."
+                maxlength="10000"
+                aria-label="Input text"
+                autofocus></textarea>
+            <div class="button-group">
+                <button id="fixButton" type="button">Fix it</button>
+                <button id="resetButton" type="button" aria-label="Reset">⟲ Reset</button>
+            </div>
+        </section>
+
+        <section class="output-section">
+            <div class="tab-group" role="tablist">
+                <button role="tab" aria-selected="true" aria-controls="plainOutput" id="plainTab">Plain text</button>
+                <button role="tab" aria-selected="false" aria-controls="htmlOutput" id="htmlTab">HTML</button>
+            </div>
+            
+            <div role="tabpanel" id="plainOutput" aria-labelledby="plainTab">
+                <textarea 
+                    id="plainText" 
+                    readonly 
+                    aria-label="Fixed plain text output"></textarea>
+                <button class="copy-button" data-target="plainText" aria-label="Copy plain text">📋 Copy</button>
+            </div>
+            
+            <div role="tabpanel" id="htmlOutput" aria-labelledby="htmlTab" hidden>
+                <textarea 
+                    id="htmlText" 
+                    readonly 
+                    aria-label="Fixed HTML output"></textarea>
+                <button class="copy-button" data-target="htmlText" aria-label="Copy HTML">📋 Copy</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>🔒 All processing happens locally in your browser. No data is sent to servers.</p>
+        <p><a href="https://github.com/[your-username]/bidi-fix" target="_blank" rel="noopener">Source code</a> • MIT License</p>
+    </footer>
+
+    <div id="toast" role="alert" aria-live="polite" hidden></div>
+
+    <script type="module" src="fixit.js"></script>
+</body>
+</html> 
